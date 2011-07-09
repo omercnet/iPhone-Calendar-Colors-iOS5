@@ -1,0 +1,10 @@
+{
+	entry = {
+		bundle = CalendarColors;
+		cell = PSLinkCell;
+		detail = "CalendarColorsListController";
+		icon = "CalendarColors.png";
+		isController = 1;
+		label = "Calendar Colors";
+	};
+}
