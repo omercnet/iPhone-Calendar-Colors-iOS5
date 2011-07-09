@@ -1,1 +1,3 @@
 Calendar Colors allows you to modify the colors of any calendars that have been setup under the Accounts settings in the iPhone.
+
+Note: You must have theos linked from the project for it to compile.
