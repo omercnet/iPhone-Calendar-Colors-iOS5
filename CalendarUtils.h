@@ -34,9 +34,7 @@
 @end
 
 @interface CalendarPreview: UIView{
-	BOOL useMask;
 	UIColor* color;
 }
 @property (nonatomic, retain) UIColor* color;
-@property (nonatomic, assign) BOOL useMask;
 @end;

@@ -153,13 +153,11 @@ static NSString *pListPath = @"/private/var/mobile/Library/Preferences/com.apple
 
 @implementation CalendarPreview
 @synthesize color;
-@synthesize useMask;
 - (id)initWithFrame:(CGRect)frame {
 
 	self = [super initWithFrame:frame];
 	if (self) {
 		[self setBackgroundColor: [UIColor whiteColor]];
-		self.useMask = false;
 	}
 	return self;
 }
@@ -169,10 +167,6 @@ static NSString *pListPath = @"/private/var/mobile/Library/Preferences/com.apple
 	//Create circle and fill it in
 	CGContextRef ctx = UIGraphicsGetCurrentContext();
 	CGContextSaveGState(ctx);
-	if([self useMask]){
-		CGImageRef alphaMask = [[UIImage imageWithContentsOfFile:@"/Library/PreferenceBundles/CalendarColors.bundle/dotmask.png"] CGImage];
-		CGContextClipToMask(ctx, rect, alphaMask);
-	}
 	CGContextBeginPath(ctx);
 	CGContextAddArc(ctx, 6, 6.0, 6.0, 0, 2*M_PI, 0);
 	CGContextSetFillColorWithColor(ctx, [color CGColor]);
