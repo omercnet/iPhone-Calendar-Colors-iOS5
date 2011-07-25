@@ -1,3 +1,8 @@
+/* 
+ * View controller for the actual settings - this is what actually creates the list of calendars
+ * and then sets up the list
+ */
+
 #import <Preferences/Preferences.h>
 #import <UIKit/UIAlert.h>
 #import <sqlite3.h> // Import the SQLite database framework
@@ -161,8 +166,9 @@
 		[liPreview setNeedsDisplay];
 	}
 }
-
-/**Need to change this code so that it correctly allocates the data and not readds the elements*/
+/*
+	TODO : Change this code so that it correctly allocates the data and not reads elements on each draw
+*/
 - (UITableViewCell *)tableView:(UITableView *)inTable cellForRowAtIndexPath:(NSIndexPath *)indexPath {
  
 	static NSString *CellIdentifier = @"Cell";

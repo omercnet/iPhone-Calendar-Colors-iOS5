@@ -1,3 +1,4 @@
+/**Basic class for a PSViewController with a table in it*/
 #import "CalendarColorPSViewController.h"
 @implementation CalendarColorPSViewController
 
@@ -11,7 +12,6 @@
                         frame.origin.x = 0.0f;
                         frame.origin.y = 0.0f;
                         frame.size = size;
-                        //_wrapperView = [[UIView alloc] initWithFrame:frame];
                 }
                 return self;
         }
@@ -25,7 +25,6 @@
     tableView.dataSource = nil;
     tableView.delegate   = nil;
     [tableView release];
-    //[_wrapperView release];
 
     initialized = NO;
 	[super dealloc];
@@ -34,7 +33,6 @@
 - (UIView *)view
 {
 	return [super view];
-//return [super view] ? [super view] : _wrapperView;
 }
 
 -(void)myInit{
@@ -64,7 +62,6 @@
 }
 
 - (id) tableView:(UITableView *)tableView cellForRowAtIndexPath:(NSIndexPath *)indexPath {
-
     return nil;
 }
 

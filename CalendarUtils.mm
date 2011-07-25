@@ -1,47 +1,12 @@
-//
-//  CalendarUtils.m
-//  PreferenceTest
-//
-//  Created by Richard Dyer on 5/21/11.
-//  Copyright 2011 Personal. All rights reserved.
-//
-
+/* 
+ * Basic functions for Calendar operations like reading from file
+ * and updating the Calendar with whatever we want it to be
+ */
 #import "CalendarUtils.h"
 static NSString *databasePath = @"/private/var/mobile/Library/Calendar/Calendar.sqlitedb";
 static NSString *pListPath = @"/private/var/mobile/Library/Preferences/com.apple.accountsettings.plist";
 
 @implementation CalendarUtils
-+(SavedCalendar*) loadCalendar: (NSNumber*) inID{
-    SavedCalendar* calendar = nil;
-    sqlite3 *database;
-    if(sqlite3_open([databasePath UTF8String], &database) == SQLITE_OK) {
-        //const char *sqlStatement = "select store_id,title,color_r,color_g from calendar";
-        const char *sqlStatement = [[NSString stringWithFormat: @"select c.store_id,s.external_id,c.title,c.color_r,c.color_g,c.color_b from Store s,Calendar c where s.rowid=c.store_id and c.store_id=%@",inID ]  UTF8String];
-        sqlite3_stmt *compiledStatement;
-        if(sqlite3_prepare_v2(database, sqlStatement, -1, &compiledStatement, NULL) == SQLITE_OK) {
-            // Loop through the results and add them to the feeds array
-            if(sqlite3_step(compiledStatement) == SQLITE_ROW) {
-                //grab the calendar name - we don't want the default calendar...
-                NSString *aName = [NSString stringWithUTF8String:(char *)sqlite3_column_text(compiledStatement, 2)];
-                if(![aName isEqualToString:@"Default"]){
-                    //NSLog(@"Getting CalendarID: %d\n",sqlite3_column_int(compiledStatement, 0));
-                    NSNumber *storeId = [NSNumber numberWithInt:sqlite3_column_int(compiledStatement, 0)];
-                    // NSLog(@"Using: %@",storeId);
-                    NSInteger *red = (NSInteger*)sqlite3_column_int(compiledStatement, 3);
-                    NSInteger *green = (NSInteger*)sqlite3_column_int(compiledStatement, 4);
-                    NSInteger *blue = (NSInteger*)sqlite3_column_int(compiledStatement, 5);
-                    calendar = [[SavedCalendar alloc] initWithValues:storeId title:aName account:nil red:red green:green blue:blue];
-                }
-            }
-        }
-        // Release the compiled statement from memory
-        sqlite3_finalize(compiledStatement);
-    }
-    sqlite3_close(database);
-    return [calendar retain];
-    
-}
-
 +(NSMutableDictionary*) loadCalendars{
 	NSMutableDictionary *calendars = [[NSMutableDictionary alloc] init];
 	 
@@ -57,30 +22,30 @@ static NSString *pListPath = @"/private/var/mobile/Library/Preferences/com.apple
 
 	sqlite3 *database;
      if(sqlite3_open([databasePath UTF8String], &database) == SQLITE_OK) {
-         //const char *sqlStatement = "select store_id,title,color_r,color_g from calendar";
-         const char *sqlStatement = "select c.store_id,s.external_id,c.title,c.color_r,c.color_g,c.color_b from Store s,Calendar c where s.rowid=c.store_id";
+         const char *sqlStatement = "select c.ROWID,c.store_id,s.external_id,c.title,c.color_r,c.color_g,c.color_b from Store s,Calendar c where s.rowid=c.store_id";
          sqlite3_stmt *compiledStatement;
          if(sqlite3_prepare_v2(database, sqlStatement, -1, &compiledStatement, NULL) == SQLITE_OK) {
              // Loop through the results and add them to the feeds array
              while(sqlite3_step(compiledStatement) == SQLITE_ROW) {
-                 //grab the calendar name - we don't want the default calendar...
-                 NSString *aName = [NSString stringWithUTF8String:(char *)sqlite3_column_text(compiledStatement, 2)];
+                 /*grab the calendar name - we don't want the default calendar...*/
+                 NSString *aName = [NSString stringWithUTF8String:(char *)sqlite3_column_text(compiledStatement, 3)];
                  if(![aName isEqualToString:@"Default"]){
-                     NSNumber *storeId = [NSNumber numberWithInt:sqlite3_column_int(compiledStatement, 0)];
-                     NSInteger *red = (NSInteger*)sqlite3_column_int(compiledStatement, 3);
-                     NSInteger *green = (NSInteger*)sqlite3_column_int(compiledStatement, 4);
-                     NSInteger *blue = (NSInteger*)sqlite3_column_int(compiledStatement, 5);
+					 NSNumber *rowId = [NSNumber numberWithInt:sqlite3_column_int(compiledStatement,0)];
+                     NSNumber *storeId = [NSNumber numberWithInt:sqlite3_column_int(compiledStatement, 1)];
+					 NSInteger *red = (NSInteger*)sqlite3_column_int(compiledStatement, 4);
+                     NSInteger *green = (NSInteger*)sqlite3_column_int(compiledStatement, 5);
+                     NSInteger *blue = (NSInteger*)sqlite3_column_int(compiledStatement, 6);
                      NSString *cId = nil;
 					 NSString *account = nil;
-                     if(sqlite3_column_text(compiledStatement, 1))
-                        cId = [NSString stringWithUTF8String:(char *)sqlite3_column_text(compiledStatement, 1)];
+                     if(sqlite3_column_text(compiledStatement, 2))
+                        cId = [NSString stringWithUTF8String:(char *)sqlite3_column_text(compiledStatement, 2)];
                      if(cId){
                          if([idMappings objectForKey:cId])
                             account = [idMappings objectForKey:cId];
                      }
 					if(!account)
 						account=@"Other";
-                     SavedCalendar* calendar = [[SavedCalendar alloc] initWithValues:storeId title:aName account:account red:red green:green blue:blue];
+                     SavedCalendar* calendar = [[SavedCalendar alloc] initWithValues:rowId storeId:storeId title:aName account:account red:red green:green blue:blue];
 					if([calendars objectForKey:account]){
 						[(NSMutableArray*)[calendars objectForKey: account] addObject: calendar];
 					}else{
@@ -88,12 +53,6 @@ static NSString *pListPath = @"/private/var/mobile/Library/Preferences/com.apple
 						[acctCalendars addObject: calendar];
 						[calendars setObject: acctCalendars forKey:account];
 					} 
-					/*if(cId){
-						 [calendars setObject:calendar forKey:@"cId"]
-                         [calendars addObject: calendar];
-                     }else{
-                         [otherCalendars addObject: calendar];
-                     }*/
                  }
              }
          }
@@ -109,7 +68,7 @@ static NSString *pListPath = @"/private/var/mobile/Library/Preferences/com.apple
     sqlite3 *database;
 	sqlite3_stmt *update_statement;
     
-	NSString *sqlStr = [NSString stringWithFormat:@"UPDATE calendar SET color_r='%d', color_g='%d', color_b='%d' WHERE store_id='%@'",[inCal red],[inCal green],[inCal blue],[inCal storeId]];
+	NSString *sqlStr = [NSString stringWithFormat:@"UPDATE calendar SET color_r='%d', color_g='%d', color_b='%d' WHERE ROWID='%@'",[inCal red],[inCal green],[inCal blue],[inCal rowId]];
 	//NSLog(@"UPDATE: %@\n",sqlStr);
 	const char *sql = [sqlStr UTF8String];
 	if(sqlite3_open([databasePath UTF8String], &database) == SQLITE_OK) {
@@ -132,10 +91,11 @@ static NSString *pListPath = @"/private/var/mobile/Library/Preferences/com.apple
 @end
 
 @implementation SavedCalendar
-@synthesize title,storeId,accountTitle,red,green,blue;
--(id)initWithValues:(NSNumber *)inId title:(NSString *)inTitle account: (NSString *) inAccount red:(NSInteger*) inRed green:(NSInteger*) inGreen blue:(NSInteger*) inBlue{
+@synthesize title,storeId,accountTitle,red,green,blue,rowId;
+-(id)initWithValues:(NSNumber *)inId storeId:(NSNumber *)inStore title:(NSString *)inTitle account: (NSString *) inAccount red:(NSInteger*) inRed green:(NSInteger*) inGreen blue:(NSInteger*) inBlue{
     if((self = [super init])){
-        [self setStoreId:inId];
+		[self setRowId:inId];
+        [self setStoreId:inStore];
         [self setTitle:inTitle];
         [self setRed:(inRed>0?inRed:0)];
         [self setBlue:(inBlue>0?inBlue:0)];
@@ -145,7 +105,7 @@ static NSString *pListPath = @"/private/var/mobile/Library/Preferences/com.apple
     return self;
 }
 -(void)print{
-    NSLog(@"Calendar: %@\n",[self storeId]);
+    NSLog(@"Calendar: %@\n",[self rowId]);
     NSLog(@" Name: %@\n",[self  title]);
     NSLog(@" Color: (%d,%d,%d)\n",[self red],[self green], [self blue]);
 }

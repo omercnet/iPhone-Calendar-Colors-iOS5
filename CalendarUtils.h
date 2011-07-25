@@ -9,6 +9,7 @@
 
 
 @interface SavedCalendar: NSObject{
+	NSNumber* rowId;
     NSNumber* storeId;
     NSInteger* red;
     NSInteger* green;
@@ -16,9 +17,10 @@
     NSString* title;
     NSString* accountTitle;
 }
--(id)initWithValues:(NSNumber *)inId title:(NSString *)inTitle account: (NSString *) inAccount red:(NSInteger*) inRed green:(NSInteger*) inGreen blue:(NSInteger*) inBlue;
+-(id)initWithValues:(NSNumber *)inId storeId:(NSNumber*) inStore title:(NSString *)inTitle account: (NSString *) inAccount red:(NSInteger*) inRed green:(NSInteger*) inGreen blue:(NSInteger*) inBlue;
 -(void)print;
 @property (nonatomic, assign) NSNumber* storeId;
+@property (nonatomic, assign) NSNumber* rowId;
 @property (nonatomic, assign) NSInteger* red;
 @property (nonatomic, assign) NSInteger* green;
 @property (nonatomic, assign) NSInteger* blue;
@@ -29,7 +31,6 @@
 @interface CalendarUtils: NSObject{
 }
 +(NSMutableDictionary*) loadCalendars;
-+(SavedCalendar*) loadCalendar:(NSNumber*) inID;
 +(BOOL) update:(SavedCalendar*) inCal;
 @end
 
