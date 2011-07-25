@@ -172,9 +172,7 @@
 		cell = [[[UITableViewCell alloc]initWithStyle:UITableViewCellStyleSubtitle reuseIdentifier:CellIdentifier] autorelease];
 		cell.selectionStyle = UITableViewCellSelectionStyleNone;
 	}else{
-		for (UIView *view in [cell subviews]) {
-		    [view removeFromSuperview];
-		}
+		//need to correctly resize the elements
 	}
 	UIImageView* myImage;
 	NSString *deviceType = [UIDevice currentDevice].model;
