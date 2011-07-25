@@ -90,16 +90,19 @@
 -(void)myInit{
     if (initialized) return;
     NSLog(@"Initializing");
-
 	calendar = [(CalendarColorsListController*)[super parentController] currentlySelectedCalendar];
 	if(!calendar){
 		NSLog(@"Parent: %@" ,[super parentController]);
 		[[super parentController] reload];
 		calendar = [(CalendarColorsListController*)[super parentController] currentlySelectedCalendar];
 	}
+	
 	NSLog(@"Loading Calendar: %@",calendar);
 	((UINavigationItem*)[super navigationItem]).title = [calendar title];
     UIView *view = [self view];
+	for (UIView *subView in [self.view subviews]) {
+	    [subView removeFromSuperview];
+	}
     tableView = [[UITableView alloc] initWithFrame:view.bounds style:UITableViewStyleGrouped];
     tableView.autoresizingMask = UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight;
     tableView.dataSource = self;
@@ -111,6 +114,10 @@
 }
 - (NSInteger)numberOfSectionsInTableView:(UITableView *)tableView {
 	return 2;
+}
+
+- (void) didRotateFromInterfaceOrientation:(UIInterfaceOrientation)fromInterfaceOrientation{
+	/*[tableView reloadData];*/
 }
 
 -(NSInteger)tableView:(UITableView *)tableView numberOfRowsInSection:(NSInteger)section {
@@ -154,6 +161,8 @@
 		[liPreview setNeedsDisplay];
 	}
 }
+
+/**Need to change this code so that it correctly allocates the data and not readds the elements*/
 - (UITableViewCell *)tableView:(UITableView *)inTable cellForRowAtIndexPath:(NSIndexPath *)indexPath {
  
 	static NSString *CellIdentifier = @"Cell";
@@ -162,29 +171,48 @@
 	if (cell == nil) {
 		cell = [[[UITableViewCell alloc]initWithStyle:UITableViewCellStyleSubtitle reuseIdentifier:CellIdentifier] autorelease];
 		cell.selectionStyle = UITableViewCellSelectionStyleNone;
+	}else{
+		for (UIView *view in [cell subviews]) {
+		    [view removeFromSuperview];
+		}
 	}
 	UIImageView* myImage;
+	NSString *deviceType = [UIDevice currentDevice].model;
+	int rightPadding = 0;
+	int sliderPadding = 0;
+	int widthPadding=0;
+	if([deviceType isEqualToString:@"iPad"]){
+		if([[UIApplication sharedApplication] statusBarOrientation] != UIInterfaceOrientationPortrait){
+			rightPadding=370;
+			widthPadding = 330;
+			sliderPadding = 40;
+		}else{
+			rightPadding = 120;
+			sliderPadding = 20;
+			widthPadding = 100;
+		}
+	}
 	switch(indexPath.section){
 		case 0:
 			switch(indexPath.row){
 				case 0:
-					myImage = [[UIImageView alloc] initWithFrame:CGRectMake(285,17,12,12)];
+					myImage = [[UIImageView alloc] initWithFrame:CGRectMake(285+rightPadding,17,12,12)];
 					[myImage setImage:[UIImage imageWithContentsOfFile:@"/Library/PreferenceBundles/CalendarColors.bundle/calmask.png"]];
 					myImage.opaque = YES; 
 					cell.textLabel.text = @"Calendar Color";
 					/*cell.detailTextLabel.text=@"Tester";*/
-					calPreview = [[CalendarPreview alloc ] initWithFrame:CGRectMake(285,17,12,12)];
+					calPreview = [[CalendarPreview alloc ] initWithFrame:CGRectMake(285+rightPadding,17,12,12)];
 					[calPreview setColor: [UIColor colorWithRed:(int)[[self calendar] red]/255.0 green:(int)[[self calendar] green]/255.0 blue:(int)[[self calendar] blue]/255.0 alpha:1.0]];
 					[cell addSubview: calPreview ];
 					[cell addSubview:myImage];
 					[myImage release];
 				break;
 				case 1:
-					myImage = [[UIImageView alloc] initWithFrame:CGRectMake(285,17,12,12)];
+					myImage = [[UIImageView alloc] initWithFrame:CGRectMake(285+rightPadding,17,12,12)];
 					[myImage setImage:[UIImage imageWithContentsOfFile:@"/Library/PreferenceBundles/CalendarColors.bundle/dotmask.png"]];
 					myImage.opaque = YES; 
 					cell.textLabel.text = @"LockInfo Color";
-					liPreview = [[CalendarPreview alloc ] initWithFrame:CGRectMake(285,17,12,12)];
+					liPreview = [[CalendarPreview alloc ] initWithFrame:CGRectMake(285+rightPadding,17,12,12)];
 					[liPreview setColor: [UIColor colorWithRed:(int)[[self calendar] red]/255.0 green:(int)[[self calendar] green]/255.0 blue:(int)[[self calendar] blue]/255.0 alpha:1.0]];
 					//[liPreview setUseMask: true];
 					[cell addSubview: liPreview ];
@@ -195,8 +223,7 @@
 			break;
 		case 1:
 			NSInteger sliderValue = nil;
-			//[NSNumber numberWithInteger:(int)[[self calendar] blue]];
-			UISlider *tempSlider = [ [ UISlider alloc ] initWithFrame: CGRectMake(80, 0, 175, 50) ];
+			UISlider *tempSlider = [ [ UISlider alloc ] initWithFrame: CGRectMake(80+sliderPadding, -3, 175+widthPadding, 50) ];
 		 	tempSlider.minimumValue = 0.0;
 		 	tempSlider.maximumValue = 255.0;
 		 	tempSlider.tag = 0;
@@ -204,8 +231,8 @@
 		 	tempSlider.continuous = YES;
 		 	[tempSlider addTarget:self action:@selector(sliderAction:) forControlEvents:UIControlEventValueChanged];
 
-			UILabel* tempLabel = [[UILabel alloc] initWithFrame: CGRectMake(265,10,30,30)];
-			
+			UILabel* tempLabel = [[UILabel alloc] initWithFrame: CGRectMake(265+rightPadding,10,30,30)];
+			tempLabel.backgroundColor = [UIColor clearColor];
 			tempLabel.textAlignment = UITextAlignmentRight;
 			
 			NSString* cellValue = nil;
@@ -215,7 +242,6 @@
 					redLabel = tempLabel;
 					redSlider = tempSlider;
 					sliderValue = (int)[[self calendar] red];
-					
 					break;
 				case 1:
 					cellValue=@"Green";
