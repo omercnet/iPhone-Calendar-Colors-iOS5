@@ -146,6 +146,7 @@
 }
 -(void)sliderAction:(UISlider*)sender
 {
+	NSLog(@"In Update Cell");
 	UILabel* tempLabel = nil;
 	if(sender == redSlider){
 		tempLabel = redLabel;

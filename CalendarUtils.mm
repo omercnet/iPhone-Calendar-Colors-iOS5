@@ -19,7 +19,6 @@ static NSString *pListPath = @"/private/var/mobile/Library/Preferences/com.apple
             [idMappings setObject:[key objectForKey:@"DisplayName"] forKey:[key objectForKey:@"Identifier"]];
         }
     }
-
 	sqlite3 *database;
      if(sqlite3_open([databasePath UTF8String], &database) == SQLITE_OK) {
          const char *sqlStatement = "select c.ROWID,c.store_id,s.external_id,c.title,c.color_r,c.color_g,c.color_b from Store s,Calendar c where s.rowid=c.store_id";
@@ -30,7 +29,7 @@ static NSString *pListPath = @"/private/var/mobile/Library/Preferences/com.apple
                  /*grab the calendar name - we don't want the default calendar...*/
                  NSString *aName = [NSString stringWithUTF8String:(char *)sqlite3_column_text(compiledStatement, 3)];
                  if(![aName isEqualToString:@"Default"]){
-					 NSNumber *rowId = [NSNumber numberWithInt:sqlite3_column_int(compiledStatement,0)];
+					 NSInteger *rowId = (NSInteger*)sqlite3_column_int(compiledStatement,0);
                      NSNumber *storeId = [NSNumber numberWithInt:sqlite3_column_int(compiledStatement, 1)];
 					 NSInteger *red = (NSInteger*)sqlite3_column_int(compiledStatement, 4);
                      NSInteger *green = (NSInteger*)sqlite3_column_int(compiledStatement, 5);
@@ -67,8 +66,7 @@ static NSString *pListPath = @"/private/var/mobile/Library/Preferences/com.apple
 +(BOOL) update:(SavedCalendar*) inCal{
     sqlite3 *database;
 	sqlite3_stmt *update_statement;
-    
-	NSString *sqlStr = [NSString stringWithFormat:@"UPDATE calendar SET color_r='%d', color_g='%d', color_b='%d' WHERE ROWID='%@'",[inCal red],[inCal green],[inCal blue],[inCal rowId]];
+	NSString *sqlStr = [NSString stringWithFormat:@"UPDATE calendar SET color_r='%d', color_g='%d', color_b='%d' WHERE ROWID='%d'",[inCal red],[inCal green],[inCal blue],[inCal rowId]];
 	//NSLog(@"UPDATE: %@\n",sqlStr);
 	const char *sql = [sqlStr UTF8String];
 	if(sqlite3_open([databasePath UTF8String], &database) == SQLITE_OK) {
@@ -92,7 +90,7 @@ static NSString *pListPath = @"/private/var/mobile/Library/Preferences/com.apple
 
 @implementation SavedCalendar
 @synthesize title,storeId,accountTitle,red,green,blue,rowId;
--(id)initWithValues:(NSNumber *)inId storeId:(NSNumber *)inStore title:(NSString *)inTitle account: (NSString *) inAccount red:(NSInteger*) inRed green:(NSInteger*) inGreen blue:(NSInteger*) inBlue{
+-(id)initWithValues:(NSInteger *)inId storeId:(NSNumber *)inStore title:(NSString *)inTitle account: (NSString *) inAccount red:(NSInteger*) inRed green:(NSInteger*) inGreen blue:(NSInteger*) inBlue{
     if((self = [super init])){
 		[self setRowId:inId];
         [self setStoreId:inStore];
